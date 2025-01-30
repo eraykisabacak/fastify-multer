@@ -16,6 +16,7 @@ import {
   FileFilterCallback,
   Setup,
   StorageEngine,
+  RequestGeneric,
 } from './interfaces'
 import { Strategy } from './lib/file-appender'
 
@@ -29,7 +30,7 @@ declare module 'fastify' {
   }
 }
 
-function allowAll(_req: FastifyRequest, _file: File, cb: FileFilterCallback) {
+function allowAll(_req: FastifyRequest<RequestGeneric>, _file: File, cb: FileFilterCallback) {
   cb(null, true)
 }
 
@@ -60,7 +61,7 @@ class Multer {
       const fileFilter = this.fileFilter
       const filesLeft = Object.create(null)
 
-      fields.forEach(function(field) {
+      fields.forEach(function (field) {
         if (typeof field.maxCount === 'number') {
           filesLeft[field.name] = field.maxCount
         } else {
@@ -68,7 +69,11 @@ class Multer {
         }
       })
 
-      function wrappedFileFilter(req: FastifyRequest, file: File, cb: FileFilterCallback) {
+      function wrappedFileFilter(
+        req: FastifyRequest<RequestGeneric>,
+        file: File,
+        cb: FileFilterCallback,
+      ) {
         if ((filesLeft[file.fieldname] || 0) <= 0) {
           return cb(new MulterError('LIMIT_UNEXPECTED_FILE', file.fieldname))
         }
@@ -89,23 +94,23 @@ class Multer {
     return makePreHandler(setup)
   }
 
-  single(name: string): preHandlerHookHandler {
+  single(name: string): preHandlerHookHandler<any, any, any, RequestGeneric> {
     return this._makePreHandler([{ name, maxCount: 1 }], 'VALUE')
   }
 
-  array(name: string, maxCount?: number): preHandlerHookHandler {
+  array(name: string, maxCount?: number): preHandlerHookHandler<any, any, any, RequestGeneric> {
     return this._makePreHandler([{ name, maxCount }], 'ARRAY')
   }
 
-  fields(fields: Field[]): preHandlerHookHandler {
+  fields(fields: Field[]): preHandlerHookHandler<any, any, any, RequestGeneric> {
     return this._makePreHandler(fields, 'OBJECT')
   }
 
-  none(): preHandlerHookHandler {
+  none(): preHandlerHookHandler<any, any, any, RequestGeneric> {
     return this._makePreHandler([], 'NONE')
   }
 
-  any(): preHandlerHookHandler {
+  any(): preHandlerHookHandler<any, any, any, RequestGeneric> {
     const setup: Setup = () => ({
       limits: this.limits,
       preservePath: this.preservePath,
@@ -127,7 +132,7 @@ interface MulterFactory {
   default: MulterFactory
 }
 
-const multer: any = function(options?: Options) {
+const multer: any = function (options?: Options) {
   if (options === undefined) {
     return new Multer({})
   }

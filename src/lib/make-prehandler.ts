@@ -13,13 +13,17 @@ import { Setup, File } from '../interfaces'
 
 type UploadError = { storageErrors?: RemoveUploadedFileError[] } & Error
 
+interface RequestGeneric {
+  Body: object;
+}
+
 function drainStream(stream: NodeJS.ReadableStream) {
   stream.on('readable', stream.read.bind(stream))
 }
 
 function makePreHandler(setup: Setup) {
   return function multerPreHandler(
-    request: FastifyRequest,
+    request: FastifyRequest<RequestGeneric>,
     _: FastifyReply,
     next: (err?: Error) => void,
   ) {
@@ -37,7 +41,7 @@ function makePreHandler(setup: Setup) {
     const fileStrategy = options.fileStrategy
     const preservePath = options.preservePath
 
-    request.body = Object.create(null)
+    request.body = Object.create(null) as object
 
     let busboy: Busboy
 
@@ -125,7 +129,7 @@ function makePreHandler(setup: Setup) {
         }
       }
 
-      appendField(request.body, fieldname, value)
+      appendField(request.body as object, fieldname, value)
     })
 
     // handle files

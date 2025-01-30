@@ -1,6 +1,10 @@
 import { FastifyRequest } from 'fastify'
 import { Strategy } from './lib/file-appender'
 
+export interface RequestGeneric {
+  Body: object
+}
+
 export type FilesObject = {
   [fieldname: string]: Partial<File>[]
 }
@@ -36,7 +40,11 @@ export interface File {
 
 export type FileFilterCallback = (error: Error | null, acceptFile?: boolean) => void
 
-export type FileFilter = (req: FastifyRequest, file: File, callback: FileFilterCallback) => void
+export type FileFilter = (
+  req: FastifyRequest<RequestGeneric>,
+  file: File,
+  callback: FileFilterCallback,
+) => void
 
 export interface Options {
   /** The destination directory for the uploaded files. */
@@ -71,21 +79,25 @@ export interface Options {
 
 export interface StorageEngine {
   _handleFile(
-    req: FastifyRequest,
+    req: FastifyRequest<RequestGeneric>,
     file: File,
     callback: (error?: Error | null, info?: Partial<File>) => void,
   ): void
-  _removeFile(req: FastifyRequest, file: File, callback: (error?: Error | null) => void): void
+  _removeFile(
+    req: FastifyRequest<RequestGeneric>,
+    file: File,
+    callback: (error?: Error | null) => void,
+  ): void
 }
 
 export type GetFileName = (
-  req: FastifyRequest,
+  req: FastifyRequest<RequestGeneric>,
   file: File,
   callback: (error: Error | null, filename?: string) => void,
 ) => void
 
 export type GetDestination = (
-  req: FastifyRequest,
+  req: FastifyRequest<RequestGeneric>,
   file: File,
   callback: (error: Error | null, destination: string) => void,
 ) => void

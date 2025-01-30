@@ -5,10 +5,17 @@ import { join } from 'path'
 import crypto from 'crypto'
 import mkdirp from 'mkdirp'
 
-import { GetFileName, GetDestination, DiskStorageOptions, File, StorageEngine } from '../interfaces'
+import {
+  GetFileName,
+  GetDestination,
+  DiskStorageOptions,
+  File,
+  StorageEngine,
+  RequestGeneric,
+} from '../interfaces'
 
 const getFilename: GetFileName = (_req, _file, cb) => {
-  crypto.randomBytes(16, function(err, raw) {
+  crypto.randomBytes(16, function (err, raw) {
     cb(err, err ? undefined : raw.toString('hex'))
   })
 }
@@ -26,7 +33,7 @@ class DiskStorage implements StorageEngine {
 
     if (typeof opts.destination === 'string') {
       mkdirp.sync(opts.destination)
-      this.getDestination = function(_$0, _$1, cb) {
+      this.getDestination = function (_$0, _$1, cb) {
         cb(null, opts.destination as string)
       }
     } else {
@@ -35,7 +42,7 @@ class DiskStorage implements StorageEngine {
   }
 
   _handleFile(
-    req: FastifyRequest,
+    req: FastifyRequest<RequestGeneric>,
     file: File,
     cb: (error: Error | null, info?: Partial<File>) => void,
   ): void {
@@ -66,7 +73,11 @@ class DiskStorage implements StorageEngine {
     })
   }
 
-  _removeFile(_req: FastifyRequest, file: File, cb: (error?: Error | null) => void): void {
+  _removeFile(
+    _req: FastifyRequest<RequestGeneric>,
+    file: File,
+    cb: (error?: Error | null) => void,
+  ): void {
     const path = file.path!
 
     delete file.destination
